@@ -1,0 +1,37 @@
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - "./app:/app"
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf"
+  php:
+    build:
+      dockerfile_inline: |
+        FROM php:fpm
+        RUN docker-php-ext-install pdo pdo_mysql
+        RUN pecl install xdebug && docker-php-ext-enable xdebug
+    volumes:
+      - "./app:/app"
+      - "./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini"
+  mysql:
+    image: mariadb:latest
+    ports:
+      - 3306:3306
+    volumes:
+      - "mysqldata:/var/lib/mysql"
+    environment:
+      MYSQL_DATABASE: dev_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+volumes:
+  mysqldata: {}
